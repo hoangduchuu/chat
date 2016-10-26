@@ -65,11 +65,16 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class MainActivity extends AppCompatActivity
         implements GoogleApiClient.OnConnectionFailedListener {
+    private DatabaseReference mFirebaseDatabaseReference;
+    private FirebaseRecyclerAdapter<FriendlyMessage, MessageViewHolder>
+            mFirebaseAdapter;
 
     public static class MessageViewHolder extends RecyclerView.ViewHolder {
         public TextView messageTextView;
         public TextView messengerTextView;
         public CircleImageView messengerImageView;
+
+
 
         public MessageViewHolder(View v) {
             super(v);
@@ -104,6 +109,20 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         // Set default username is anonymous.
+        mFirebaseDatabaseReference = FirebaseDatabase.getInstance().getReference();
+        mFirebaseAdapter = new FirebaseRecyclerAdapter<FriendlyMessage, MessageViewHolder>(
+                FriendlyMessage.class,
+                R.layout.item_message,
+                MessageViewHolder.class,
+                mFirebaseDatabaseReference.child(MESSAGES_CHILD)) {
+            @Override
+            protected void populateViewHolder(MessageViewHolder viewHolder, FriendlyMessage model, int position) {
+                mProgressBar.setVisibility(View.INVISIBLE);
+                viewHolder.messageTextView.setText(model.getText());
+                viewHolder.messengerTextView.setText(model.getName());
+
+            }
+        };
         mUsername = ANONYMOUS;
 
         mGoogleApiClient = new GoogleApiClient.Builder(this)
